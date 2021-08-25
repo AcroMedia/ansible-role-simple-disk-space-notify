@@ -1,21 +1,22 @@
 #!/bin/bash
 
-# This is a bash include. White space is not trivial.
+# This is a bash include, sourced by {{ disk_space_notify_script_path }}.
+# White space is not trivial.
 
 # Who do we notify? This can be a user account or an email address. SMTP needs to be running on localhost for an email address to work.
-MAILTO="root"
+MAILTO="{{ disk_space_notify_mailto }}"
 
 # What address should mail be delivered from? Mail has a much better chance of arriving if you change this to a valid address.
-MAILFROM="root@localhost"
+MAILFROM="{{ disk_space_notify_mailfrom }}"
 
 # Set alert level, as a percent (out of 100).
 # ie. 80 or 90
 # A separate mail will be sent for every partition that crosses this threshold.
 # DO NOT INCLUDE THE PERCENT SYMBOL.
-THRESHOLD=80
+THRESHOLD={{ disk_space_notify_threshold_percent }}
 
 # Exclude list of unwanted monitoring, if several partions then use "|" to separate the partitions.
 # tmpfs, cdrom, and /snap/ are already excluded by default, so you don't need to specify those.
 # An example: EXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
 # This is part of a grep regular expression. Treat it accordingly.
-EXCLUDE_LIST="/dev/shm|/run/shm|/dev/loop"
+EXCLUDE_LIST="{{ disk_space_notify_exclude_expression }}"
