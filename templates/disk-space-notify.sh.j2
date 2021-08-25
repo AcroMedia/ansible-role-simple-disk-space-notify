@@ -1,0 +1,111 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+# -------------------------------------------------------------------------
+# Notify the specified user if any filesystem is >= $THRESHOLD percent.
+# Cdrom, tmpfs, and snap filesystems are always ignored.
+# -------------------------------------------------------------------------
+
+
+function main () {
+  LOCAL_SETTINGS="{{ disk_space_notify_conf_path }}"
+  if [ -f "$LOCAL_SETTINGS" ]; then
+    source "$LOCAL_SETTINGS"   # Use custom settings if they exist.
+  else
+    # ------------------------------------------------------------------------
+    # Copy the following to your $LOCAL_SETTINGS file if you want to be able
+    # to apply future updates to the script without worrying about overwriting
+    # your own configuration.
+    # ------------------------------------------------------------------------
+
+    # Set recipient for notifications. This can be a local linux user or an email address
+    MAILTO="{{ disk_space_notify_mailto }}"
+
+    # What address should mail be delivered from? Mail has a much better chance of arriving if you change this to a valid address.
+    MAILFROM="{{ disk_space_notify_mailfrom }}"
+
+    # Set alert level, as a percent (out of 100).
+    # ie. 80 or 90
+    # DO NOT INCLUDE THE PERCENT SYMBOL.
+    THRESHOLD={{ disk_space_notify_threshold_percent }}
+
+    # Exclude list of unwanted monitoring. If several partions then use "|" to separate the partitions.
+    # This is used in a grep regular expression to filter out lines printed by 'df -PH'
+    # An example: EXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
+    EXCLUDE_LIST="{{ disk_space_notify_exclude_expression }}"
+  fi
+
+  # MAILFROM was added later. It may not exist in conf files.
+  if [ -z "${MAILFROM:-}" ]; then
+    MAILFROM='{{ disk_space_notify_mailfrom }}'
+  fi
+
+
+  if [[ ! "$MAILTO" ]] || [[ ! "$THRESHOLD" ]] || [[ ! "$EXCLUDE_LIST" ]]; then
+    echo "At least one setting was not defined. The script cannot continue."
+    exit 1
+  fi
+
+  if  which mail > /dev/null; then
+    true # Mail exists.
+  else
+    warn "Cannot notify ${MAILTO} as there is no 'mail' command available."
+  fi
+
+  if [[ -z "$EXCLUDE_LIST" ]] ; then
+    df -PH | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
+    df -PHi | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
+  else
+    df -PH | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
+    df -PHi | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
+  fi
+
+}
+
+function disk_space_notify () {
+  BLOCK_OR_INODE="${1}"
+  while read -r LINE; do
+    PERCENT_USE=$(echo "${LINE}" | awk '{ print $1}' | cut -d'%' -f1)
+    MOUNTPOINT=$(echo "${LINE}" | awk '{print $2}')
+    #cerr "MOUNTPOINT: $MOUNTPOINT"
+    #cerr "PERCENT_USE: $PERCENT_USE"
+    if ! is_positive_integer "$PERCENT_USE" ; then
+      warn "Cannot evaluate $BLOCK_OR_INODE use for '$MOUNTPOINT'; Expected PERCENT_USE to be a positive integer. Got '$PERCENT_USE' instead."
+      continue
+    fi
+    if [[ "$PERCENT_USE" -ge $THRESHOLD ]] ; then
+      MESSAGEBODY="The filesystem mounted at \"${MOUNTPOINT}\" on $(hostname) reports ${PERCENT_USE}% ${BLOCK_OR_INODE} usage as of $(date). Notify threshold is set to ${THRESHOLD} percent."
+      SUBJECT="Alert: ${BLOCK_OR_INODE} usage is at ${PERCENT_USE}%"
+      if  which mail > /dev/null; then
+        echo "$MESSAGEBODY"| mail -s "${SUBJECT}" -r "${MAILFROM}" "${MAILTO}"
+      else
+        warn "$MESSAGEBODY"
+      fi
+    fi
+  done
+}
+
+
+# Zero is a positive integer too.
+function is_positive_integer () {
+  local WHAT="$*"
+  if [[ "$WHAT" =~ ^[0-9]+$ ]]; then
+    true
+  else
+    false
+  fi
+}
+
+function err() {
+  cerr "ERROR: $*"
+}
+
+function warn () {
+  cerr "WARN: $*"
+}
+
+function cerr() {
+  >&2 echo "$@"
+}
+
+main "$@"

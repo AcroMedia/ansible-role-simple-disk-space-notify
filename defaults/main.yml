@@ -1,0 +1,27 @@
+---
+# Who do we notify? This can be a user account or an email address. SMTP needs to be running on localhost for an email address to work.
+disk_space_notify_mailto: root
+
+# What address should mail be delivered from? Mail has a much better chance of arriving if you change this to a valid address.
+disk_space_notify_mailfrom: root@localhost
+
+# Set alert level, as a percent (out of 100).
+# ie. 80 or 90
+# A separate mail will be sent for every partition that crosses this threshold.
+# DO NOT INCLUDE THE PERCENT SYMBOL.
+disk_space_notify_threshold_percent: '80'
+
+# A grep expression to exclude paths from monitoring, if several partions then use "|" to separate the partitions.
+# tmpfs, cdrom, and /snap/ are already excluded by default, so you don't need to specify those.
+# An example: EXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
+disk_space_notify_exclude_expression: '/dev/shm|/run/shm|/dev/loop'
+
+
+disk_space_notify_cron_day: '*'
+disk_space_notify_cron_hour: '*/6'
+disk_space_notify_cron_minute: '0'
+disk_space_notify_cron_owner: root
+
+
+disk_space_notify_conf_path: /etc/disk-space-notify.conf
+disk_space_notify_script_path: /usr/local/bin/disk-space-notify.sh
