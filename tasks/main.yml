@@ -1,7 +1,7 @@
 ---
 - name: Upload disk space notify config
   template:
-    src: /templates/disk-space-notify.conf.j2
+    src: "{{ role_path }}/templates/disk-space-notify.conf.j2"
     dest: "{{ disk_space_notify_conf_path }}"
     backup: true
     owner: root
@@ -10,7 +10,7 @@
 
 - name: Upload disk space notify script
   template:
-    src: /templates/disk-space-notify.sh.j2
+    src: "{{ role_path }}/templates/disk-space-notify.sh.j2"
     dest: "{{ disk_space_notify_script_path }}"
     backup: false
     owner: root
@@ -23,7 +23,9 @@
     day: '{{ disk_space_notify_cron_day }}'
     hour: '{{ disk_space_notify_cron_hour }}'
     minute: '{{ disk_space_notify_cron_minute }}'
-    owner: '{{ disk_space_notify_cron_owner }}'
+    user: '{{ disk_space_notify_cron_owner }}'
     job: "{{ disk_space_notify_script_path }}"
 
-# @TODO: Warn about duplicate jobs? Ansible will create a 2nd job if the role was switched from the old makefile installer to this role.
+# @TODO: Check for and warn about duplicate cron jobs, in cases where the playbook has been switched from the makeifle version to this role
+# If orginal defaults were not modified, only the comment will be duplciated, which is not a problem.
+# If the job was adjusted from defaults, ansible will create a 2nd job, which is undesireable.
