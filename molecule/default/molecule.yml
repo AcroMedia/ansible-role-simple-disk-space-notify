@@ -1,0 +1,20 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: instance
+    image: "registry.gitlab.com/aussielunix/ansible/molecule-containers/${MOLECULE_DISTRO:-ubuntu:jammy}"
+    privileged: true
+    pre_build_image: true
+    override_command: false
+    tmpfs:
+      - /run
+      - /tmp
+provisioner:
+  name: ansible
+  env:
+      ANSIBLE_VERBOSITY: ${MOLECULE_ANSIBLE_VERBOSITY:-0}
+verifier:
+  name: ansible

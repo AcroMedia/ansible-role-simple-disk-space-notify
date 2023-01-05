@@ -1,0 +1,30 @@
+---
+# This is an example playbook to execute Ansible tests.
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Run df
+      shell: df -PHiT
+      register: df_result
+
+    - name: Output df_result
+      debug:
+          var: df_result.stdout_lines
+
+    - name: Assert that the cron job was added
+      shell: crontab -l | grep /usr/local/bin/disk-space-notify.sh
+      register: cron_result
+
+    - name: Show cron result
+      debug:
+        var: cron_result
+
+    - name: Make sure the script works
+      shell: /usr/local/bin/disk-space-notify.sh
+      register: script_result
+
+    - name: Output script result
+      debug:
+        var: script_result

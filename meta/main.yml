@@ -1,6 +1,8 @@
 ---
 galaxy_info:
   author: Dale Anderson
+  namespace: acromedia
+  role_name: disk_space_notify
   description: Install a cron job to periodically monitor disk use, and send a notification email if space exceeds the configured threshold
   company: Acro Media Inc. https://www.acromedia.com/
   license: GPLv3

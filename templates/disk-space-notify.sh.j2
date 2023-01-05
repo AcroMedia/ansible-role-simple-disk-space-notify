@@ -52,12 +52,14 @@ function main () {
     warn "Cannot notify ${MAILTO} as there is no 'mail' command available."
   fi
 
+  # @TODO: Revisit the "EXCLUDE_LIST" defaults, which are now redundant - excluding types is far more effective than excluding mount points.
+  EXCLUDED_TYPES="{{ disk_space_notify_excluded_fs_types_command_options }}"
   if [[ -z "$EXCLUDE_LIST" ]] ; then
-    df -PH | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
-    df -PHi | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
+    df -PH $EXCLUDED_TYPES | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
+    df -PHi $EXCLUDED_TYPES | grep -vE "^Filesystem|tmpfs|cdrom|/snap/" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
   else
-    df -PH | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
-    df -PHi | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
+    df -PH $EXCLUDED_TYPES | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "disk space"
+    df -PHi $EXCLUDED_TYPES | grep -vE "^Filesystem|tmpfs|cdrom|/snap/|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | disk_space_notify "inode table"
   fi
 
 }
