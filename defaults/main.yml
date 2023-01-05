@@ -25,3 +25,14 @@ disk_space_notify_cron_owner: root
 
 disk_space_notify_conf_path: /etc/disk-space-notify.conf
 disk_space_notify_script_path: /usr/local/bin/disk-space-notify.sh
+
+# Ignore non-local, temporary, and virtual filesystems
+disk_space_notify_excluded_fs_types:
+  - squashfs
+  - tmpfs
+  - devtmpfs
+  - vfat
+  - exfat
+  - nfs4
+
+disk_space_notify_excluded_fs_types_command_options: "{{ ['-x '] | product(disk_space_notify_excluded_fs_types) | map('join', '')  | join(' ') }}"
