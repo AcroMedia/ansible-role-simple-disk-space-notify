@@ -34,5 +34,6 @@ disk_space_notify_excluded_fs_types:
   - vfat
   - exfat
   - nfs4
+  - efivarfs
 
 disk_space_notify_excluded_fs_types_command_options: "{{ ['-x '] | product(disk_space_notify_excluded_fs_types) | map('join', '')  | join(' ') }}"
