@@ -13,7 +13,7 @@
       runs-on: ubuntu-latest
       steps:
         - name: checkout
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
           with:
             path: "${{ github.repository }}"
         - name: molecule
@@ -37,7 +37,7 @@
             - geerlingguy/docker-centos7-ansible:latest
       steps:
         - name: checkout
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
           with:
             path: "${{ github.repository }}"
         - name: molecule
